@@ -16,7 +16,7 @@ namespace AlexaIoTClient
     /// </summary>
     public partial class App : Application
     {
- 
+
         void App_Startup(object sender, StartupEventArgs e)
         {
             // Application is running
@@ -29,6 +29,18 @@ namespace AlexaIoTClient
                     startMinimized = true;
                 }
             }
+
+            var mediaPlayerHelper = new Helper.MediaPlayerHelper();
+            var thread = new Thread(
+                () =>   {
+                            //remove before creating
+                            mediaPlayerHelper.RemovePlayList();
+                            mediaPlayerHelper.CreatePlayList();
+
+                        }
+                );
+
+            thread.Start();
 
             RunProc("cmd.exe", $"/c start /b {System.IO.Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName)}\\client.cmd");
             RunProc("cmd.exe", $"/c {System.IO.Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName)}\\iot.cmd");
@@ -43,7 +55,7 @@ namespace AlexaIoTClient
             }
             mainWindow.Show();
         }
-        public void RunProc(string programPath, string arg )
+        public void RunProc(string programPath, string arg)
         {
             Process proc = new Process();
             proc.StartInfo.FileName = programPath;
@@ -56,16 +68,15 @@ namespace AlexaIoTClient
         private void Application_Exit(object sender, ExitEventArgs e)
         {
             StreamWriter sw = new StreamWriter("proc.log");
- 
+
 
             foreach (Process kProcess in Process.GetProcesses())
             {
                 try
                 {
-                    sw.WriteLine(kProcess.Handle+","+ kProcess.ProcessName);
+                    sw.WriteLine(kProcess.Handle + "," + kProcess.ProcessName);
                     sw.Flush();
-                    if (kProcess.ProcessName.StartsWith("eRecoveryUI"))
-                        kProcess.Kill();
+
                     if (kProcess.ProcessName.StartsWith("cmd"))
                         kProcess.Kill();
                     if (kProcess.ProcessName.StartsWith("node"))
@@ -75,7 +86,7 @@ namespace AlexaIoTClient
             }
             sw.Close();
             KillCmdAsync();
-            RunProc("taskkill"," /f /im node.exe");
+            RunProc("taskkill", " /f /im node.exe");
 
         }
 
@@ -90,14 +101,7 @@ namespace AlexaIoTClient
             await Task.Run(() => KillCmd());
         }
 
-        public void CreatePlayList()
-        {
-            WMPLib.WindowsMediaPlayer wplayer = new WMPLib.WindowsMediaPlayer();
-            WMPLib.IWMPPlaylist playlist = wplayer.playlistCollection.newPlaylist("myplaylist2");
-            WMPLib.IWMPMedia media;
-            media = wplayer.newMedia(@"..\Canon_in_C_Major.mp3");
-            playlist.appendItem(media);
-        }
-            
+
+
     }
 }

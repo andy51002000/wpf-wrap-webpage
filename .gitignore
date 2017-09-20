@@ -22,3 +22,6 @@ x64
 ipch/
 obj/
 */obj
+*/TestResults
+*/packages
+packages
